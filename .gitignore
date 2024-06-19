@@ -1,0 +1,5 @@
+.vscode
+composer.phar
+.phpunit.result.cache
+/tests/Functional
+/vendor/

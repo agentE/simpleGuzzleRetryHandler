@@ -1,0 +1,28 @@
+{
+    "name": "ag/guzzle",
+    "description": "test guzzle client with retry support",
+    "type": "project",
+    "license": "GNU",
+    "authors": [
+        {
+            "name": "Erik",
+            "email": "976211+agentE@users.noreply.github.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Ag\\Guzzle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "prs-4": {
+            "Ag\\Tests\\Guzzle\\": "tests/"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.2"
+    }
+}
