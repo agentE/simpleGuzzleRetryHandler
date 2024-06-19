@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
 
 final class RetryTest extends TestCase
 {
+    const IM_A_TEAPOT = 418;
+
     private Retry $handler;
     private Request $request;
     private Response $response;
@@ -117,7 +119,7 @@ final class RetryTest extends TestCase
         }
     }
 
-    public function testDelayWithRetryAfterHeaderInSeconds(): void
+    public function testDelayWithRetryAfterHeaderTooManyRequestsInSeconds(): void
     {
         $retryDelay = $this->handler->retryDelay();
         $this->assertInstanceOf(Closure::class, $retryDelay);
@@ -130,7 +132,7 @@ final class RetryTest extends TestCase
         $this->assertEquals($retryAfter * $retries * 1000, $delay);
     }
 
-    public function testDelayWithRetryAfterHeaderAsDateString(): void
+    public function testDelayWithRetryAfterHeaderTooManyRequestsAsDateString(): void
     {
         $retryDelay = $this->handler->retryDelay();
         $this->assertInstanceOf(Closure::class, $retryDelay);
@@ -143,5 +145,89 @@ final class RetryTest extends TestCase
         $response = new Response(Retry::TOO_MANY_REQUESTS, ['Retry-After' => $retryAfter, 'X-Foo' => 'Bar'], 'Too Many Requests');
         $delay = $retryDelay($retries, $response);
         $this->assertEquals(3600 * 1000 * $retries, $delay);
+    }
+
+    public function testDelayWithRetryAfterHeaderServiceUnavailableInSeconds(): void
+    {
+        $retryDelay = $this->handler->retryDelay();
+        $this->assertInstanceOf(Closure::class, $retryDelay);
+
+        $retries = 2;
+        $retryAfter = 3600;
+        $response = new Response(Retry::SERVICE_UNAVAILABLE, ['Retry-After' => $retryAfter * $retries, 'X-Foo' => 'Bar'], 'Service Unavailable');
+        $delay = $retryDelay($retries, $response);
+
+        $this->assertEquals($retryAfter * $retries * 1000, $delay);
+    }
+
+    public function testDelayWithRetryAfterHeaderServiceUnavailableAsDateString(): void
+    {
+        $retryDelay = $this->handler->retryDelay();
+        $this->assertInstanceOf(Closure::class, $retryDelay);
+
+        $retries = 3;
+        $date = new DateTime('NOW');
+        $date->modify(sprintf('+%d hour', $retries));
+        $retryAfter = gmdate(DATE_COOKIE, $date->getTimestamp());
+
+        $response = new Response(Retry::SERVICE_UNAVAILABLE, ['Retry-After' => $retryAfter, 'X-Foo' => 'Bar'], 'Service Unavailable');
+        $delay = $retryDelay($retries, $response);
+        $this->assertEquals(3600 * 1000 * $retries, $delay);
+    }
+
+    public function testDelayWithRetryAfterHeaderMovedPermanentlyInSeconds(): void
+    {
+        $retryDelay = $this->handler->retryDelay();
+        $this->assertInstanceOf(Closure::class, $retryDelay);
+
+        $retries = 2;
+        $retryAfter = 3600;
+        $response = new Response(Retry::MOVED_PERMANTENTLY, ['Retry-After' => $retryAfter * $retries, 'X-Foo' => 'Bar'], 'Service Unavailable');
+        $delay = $retryDelay($retries, $response);
+
+        $this->assertEquals($retryAfter * $retries * 1000, $delay);
+    }
+
+    public function testDelayWithRetryAfterHeaderMovedPermanentlyAsDateString(): void
+    {
+        $retryDelay = $this->handler->retryDelay();
+        $this->assertInstanceOf(Closure::class, $retryDelay);
+
+        $retries = 3;
+        $date = new DateTime('NOW');
+        $date->modify(sprintf('+%d hour', $retries));
+        $retryAfter = gmdate(DATE_COOKIE, $date->getTimestamp());
+
+        $response = new Response(Retry::MOVED_PERMANTENTLY, ['Retry-After' => $retryAfter, 'X-Foo' => 'Bar'], 'Service Unavailable');
+        $delay = $retryDelay($retries, $response);
+        $this->assertEquals(3600 * 1000 * $retries, $delay);
+    }
+
+    public function testDelayWithRetryTeaPotAfterInSeconds(): void
+    {
+        $retryDelay = $this->handler->retryDelay();
+        $this->assertInstanceOf(Closure::class, $retryDelay);
+
+        $retries = 3;
+        $retryAfter = 3600;
+
+        $response = new Response(self::IM_A_TEAPOT, ['Retry-After' => $retryAfter, 'X-Foo' => 'Bar'], 'I\'m a teapot');
+        $delay = $retryDelay($retries, $response);
+        $this->assertEquals(RetryMiddleware::exponentialDelay($retries), $delay);
+    }
+
+    public function testDelayWithRetryTeaPotAfterAsDateString(): void
+    {
+        $retryDelay = $this->handler->retryDelay();
+        $this->assertInstanceOf(Closure::class, $retryDelay);
+
+        $retries = 3;
+        $date = new DateTime('NOW');
+        $date->modify(sprintf('+%d hour', $retries));
+        $retryAfter = gmdate(DATE_COOKIE, $date->getTimestamp());
+
+        $response = new Response(self::IM_A_TEAPOT, ['Retry-After' => $retryAfter, 'X-Foo' => 'Bar'], 'I\'m a teapot');
+        $delay = $retryDelay($retries, $response);
+        $this->assertEquals(RetryMiddleware::exponentialDelay($retries), $delay);
     }
 }

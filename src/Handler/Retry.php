@@ -9,7 +9,9 @@ use GuzzleHttp\RetryMiddleware;
 
 class Retry
 {
+    const MOVED_PERMANTENTLY = 302;
     const TOO_MANY_REQUESTS = 429;
+    const SERVICE_UNAVAILABLE = 503;
 
     private int $maxRetries;
 
@@ -45,7 +47,7 @@ class Retry
     public function retryDelay(): \Closure
     {
         return function (int $numberOfRetries, Response $response = null) {
-            if ($response && $response->hasHeader('Retry-After') && self::TOO_MANY_REQUESTS === $response->getStatusCode()) {
+            if ($response && $response->hasHeader('Retry-After') && in_array($response->getStatusCode(), [self::MOVED_PERMANTENTLY, self::TOO_MANY_REQUESTS, self::SERVICE_UNAVAILABLE])) {
                 // @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
                 $retryAfter = $response->getHeaderLine('Retry-After');
 
