@@ -1,5 +1,5 @@
 {
-    "name": "ag/guzzle-retry-handler",
+    "name": "antelucangizmos/guzzle-retry-handler",
     "description": "test guzzle client with retry support",
     "type": "project",
     "license": "GPL",
