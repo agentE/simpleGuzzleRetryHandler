@@ -1,8 +1,8 @@
 {
-    "name": "ag/guzzle",
+    "name": "ag/guzzle-retry-handler",
     "description": "test guzzle client with retry support",
     "type": "project",
-    "license": "GNU",
+    "license": "GPL",
     "authors": [
         {
             "name": "Erik",
